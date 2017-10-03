@@ -19,11 +19,9 @@ void Application::InitVariables(void)
 	////Alberto needed this at this position for software recording.
 	//m_pWindow->setPosition(sf::Vector2i(710, 0));
 
-
 	// Initialize the cube model we will be reusing
 	m_cube = new MyMesh();
 	m_cube->GenerateCube(1.0f, C_BLACK);
-
 
 	// Initialize a stream and string to read in the alien
 	std::stringstream myStream(alienModelStr);
@@ -35,7 +33,6 @@ void Application::InitVariables(void)
 	// position at it's appropriate world position
 	while (std::getline(myStream, str))
 	{
-		//std::cout << "Read line: " << str << std::endl;
 		if (row == 0)
 		{
 			rowCount = std::stoi(str, nullptr, 10);
@@ -47,8 +44,6 @@ void Application::InitVariables(void)
 			if (str[col] == '1')
 			{
 				m_positions.push_back(vector3((float)col, (float)(rowCount - row), 0.0f));
-				//std::cout << "\tCreating cube at (" << m_Cubes.back().position.x
-				//	<< ", " << m_Cubes.back().position.y  << ")" << std::endl;
 			}
 		}
 		row++;
