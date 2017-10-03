@@ -19,11 +19,20 @@ void Application::InitVariables(void)
 	////Alberto needed this at this position for software recording.
 	//m_pWindow->setPosition(sf::Vector2i(710, 0));
 
+
+	// Initialize the cube model we will be reusing
+	m_cube = new MyMesh();
+	m_cube->GenerateCube(1.0f, C_BLACK);
+
+
+	// Initialize a stream and string to read in the alien
 	std::stringstream myStream(alienModelStr);
 	std::string str;
 
 	int row = 0;
 	int rowCount = -1;
+	// Read in the model string, for every '1', create a block
+	// position at it's appropriate world position
 	while (std::getline(myStream, str))
 	{
 		//std::cout << "Read line: " << str << std::endl;
@@ -37,10 +46,7 @@ void Application::InitVariables(void)
 		{
 			if (str[col] == '1')
 			{
-				m_Cubes.push_back(MyModel());
-				m_Cubes.back().position = vector3(col, rowCount - row, 0);
-				m_Cubes.back().mesh.GenerateCube(1.0f, C_BLACK);
-
+				m_positions.push_back(vector3((float)col, (float)(rowCount - row), 0.0f));
 				//std::cout << "\tCreating cube at (" << m_Cubes.back().position.x
 				//	<< ", " << m_Cubes.back().position.y  << ")" << std::endl;
 			}
@@ -48,7 +54,7 @@ void Application::InitVariables(void)
 		row++;
 	}
 
-	std::cout << "Cubes generated: " << m_Cubes.size() << std::endl;
+	std::cout << "\nCubes generated: " << m_positions.size() << std::endl;
 }
 void Application::Update(void)
 {
@@ -66,11 +72,18 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 
+	// draw a skybox
+	m_pMeshMngr->AddSkyboxToRenderList();
+
+	// position tracks the position of the entire alien as a whole
 	static vector3 position(0, 0, 0);
+	// tracks whether we are moving the alien right or left
 	static bool moveLeft = true;
 
+	// how far we should move the alien each frame
 	static const vector3 delta(0.15, 0.0, 0.0);
 
+	// add/remove the delta depending on direction we are moving
 	if (moveLeft)
 	{
 		position -= delta;
@@ -80,19 +93,21 @@ void Application::Display(void)
 		position += delta;
 	}
 
+	// change direction we are moving after we hit the boundaries
 	if (position.x < -10.0f || position.x > 0.0f)
 	{
 		moveLeft = !moveLeft;
 	}
 
+	// objectMat tracks the model matrix of the entire alien
 	matrix4 objectMat = glm::translate(IDENTITY_M4, position);
+	matrix4 modelMatrix;
 
-	for (int i = 0; i < m_Cubes.size(); i++) {
-		m_Cubes[i].mesh.Render(m_pCameraMngr->GetProjectionMatrix(), m_pCameraMngr->GetViewMatrix(), glm::translate(objectMat, m_Cubes[i].position));
+	for (int i = 0; i < m_positions.size(); i++) {
+		// render each block at its appropriate position, reusing the mesh object
+		modelMatrix = glm::translate(objectMat, m_positions[i]);
+		m_cube->Render(m_pCameraMngr->GetProjectionMatrix(), m_pCameraMngr->GetViewMatrix(), modelMatrix);
 	}
-
-	// draw a skybox
-	m_pMeshMngr->AddSkyboxToRenderList();
 	
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();
@@ -108,6 +123,8 @@ void Application::Display(void)
 }
 void Application::Release(void)
 {
+	SafeDelete(m_cube);
+
 	//release GUI
 	ShutdownGUI();
 }

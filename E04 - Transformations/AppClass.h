@@ -12,20 +12,10 @@ Date: 2017/05
 
 #include "MyMesh.h"
 
-struct MyModel
-{
-	MyMesh mesh;
-	vector3 position;
-
-	MyModel() {
-		mesh = MyMesh();
-		position = vector3(0, 0, 0);
-	}
-};
-
 class Application
 {
-	std::vector<MyModel> m_Cubes;
+	std::vector<vector3> m_positions;
+	MyMesh* m_cube;
 
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 private:
