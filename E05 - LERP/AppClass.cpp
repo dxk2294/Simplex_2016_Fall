@@ -62,7 +62,15 @@ void Application::Display(void)
 
 
 	//your code goes here
-	v3CurrentPos = vector3(0.0f, 0.0f, 0.0f);
+	static int nodeIndex = 0;
+	float fPercentage = MapValue(fTimer, 0.0f, 0.5f, 0.0f, 1.0f);
+	v3CurrentPos = glm::lerp(m_stopsList[nodeIndex], m_stopsList[(nodeIndex + 1) % m_stopsList.size()], fPercentage);
+
+	if (fPercentage > 1.0f)
+	{
+		fTimer = 0.0f;
+		nodeIndex = (nodeIndex + 1) % m_stopsList.size();
+	}
 	//-------------------
 	
 
