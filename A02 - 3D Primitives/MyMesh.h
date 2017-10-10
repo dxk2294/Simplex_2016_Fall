@@ -34,6 +34,19 @@ class MyMesh
 
 	ShaderManager* m_pShaderMngr = nullptr;	//Shader Manager
 
+	/*
+	USAGE: Generates a cylinder mesh geomtry
+	ARGUMENTS:
+	-	float a_fRadius -> radius
+	-	float a_fHeight -> how tall is the mesh
+	-	int a_nSubdivisions -> divisions on the cap
+	-	bool drawCaps -> whether the caps of the cylinder should be drawn
+	-	bool ccw -> whether the triangles should be drawn counter clockwise (or clockwise if false)
+	OUTPUT:
+	-	std::vector<vector3> -> vector of vertices along the bottom ring of the cylinder 
+	*/
+	std::vector<vector3> GenerateCylinderGeometry(float a_fRadius, float a_fHeight, int a_nSubdivisions, bool drawCaps = true, bool ccw = true);
+
 public:
 	/*
 	USAGE: Initialize the object's fields

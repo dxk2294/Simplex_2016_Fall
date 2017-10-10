@@ -272,11 +272,38 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	if (a_nSubdivisions > 360)
 		a_nSubdivisions = 360;
 
+	int heightDivisions = 1;
+
 	Release();
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	std::vector<vector3> vertexDataCyl(a_nSubdivisions * 2);
+	const float TWO_PI = 2 * PI;
+	// build the bottom circle
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		float angle = (float)i / a_nSubdivisions * TWO_PI;
+		vertexDataCyl[i] = vector3(a_fRadius * sin(angle), -a_fHeight/2.0f, a_fRadius * cos(angle));
+	}
+
+	// basically does the same thing as the cyclinder code, except
+	// the radius gradually decreases as the quad strip gets closer to
+	// the tip of the cone
+	//
+	// finally the topmost row of vertices is connected to the tip
+	// of the cone to form a strip of singular triangles
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		vector3 botLeft(vertexDataCyl[i].x, vertexDataCyl[i].y, vertexDataCyl[i].z);
+		vector3 botRight(vertexDataCyl[(i + 1) % a_nSubdivisions].x, vertexDataCyl[(i + 1) % a_nSubdivisions].y, vertexDataCyl[(i + 1) % a_nSubdivisions].z);
+
+		// draw bottom
+		AddTri(botRight, botLeft, vector3(0.0f, -a_fHeight/2.0f, 0.0f));
+
+		//draw top
+		AddTri(botLeft, botRight, vector3(0.0, a_fHeight/2.0f, 0.0));
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -300,12 +327,61 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	GenerateCylinderGeometry(a_fRadius, a_fHeight, a_nSubdivisions);
 	// -------------------------------
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
+}
+std::vector<vector3> MyMesh::GenerateCylinderGeometry(float a_fRadius, float a_fHeight, int a_nSubdivisions, bool drawCaps, bool ccw)
+{
+	std::vector<vector3> vertexDataCyl(a_nSubdivisions * 2);
+	const float TWO_PI = 2 * PI;
+	// build the bottom circle
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		float angle = (float)i / a_nSubdivisions * TWO_PI;
+		vertexDataCyl[i] = vector3(a_fRadius * sin(angle), -a_fHeight / 2.0f, a_fRadius * cos(angle));
+	}
+
+	vector3 verticalOffset(0.0f, a_fHeight, 0.0f);
+
+	// generate the positions around the edge of the cyclinder
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		vector3 botLeft = vertexDataCyl[i];
+		vector3 botRight = vertexDataCyl[(i + 1) % a_nSubdivisions];
+
+		if (ccw) 
+		{
+			if (drawCaps) 
+			{
+				// draw bottom
+				AddTri(botRight, botLeft, vector3(0.0f, -a_fHeight / 2.0f, 0.0f));
+				// draw top
+				AddTri(botLeft + verticalOffset, botRight + verticalOffset, vector3(0.0f, -a_fHeight / 2.0f, 0.0f) + verticalOffset);
+			}
+			//draw middle
+			AddTri(botLeft, botRight, botRight + verticalOffset);
+			AddTri(botLeft + verticalOffset, botLeft, botRight + verticalOffset);
+		}
+		else 
+		{
+			if (drawCaps)
+			{
+				// draw bottom
+				AddTri(botLeft, botRight, vector3(0.0f, -a_fHeight / 2.0f, 0.0f));
+				// draw top
+				AddTri(botRight + verticalOffset, botLeft + verticalOffset, vector3(0.0f, -a_fHeight / 2.0f, 0.0f) + verticalOffset);
+			}
+			//draw middle
+			AddTri(botRight, botLeft, botRight + verticalOffset);
+			AddTri(botLeft, botLeft + verticalOffset, botRight + verticalOffset);
+		}
+	}
+
+	return vertexDataCyl;
 }
 void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fHeight, int a_nSubdivisions, vector3 a_v3Color)
 {
@@ -330,14 +406,34 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	// a tube is just two cylinders connected slight differently at the top + bottom
+	std::vector<vector3> outerCircle = GenerateCylinderGeometry(a_fOuterRadius, a_fHeight, a_nSubdivisions, false, true);
+	std::vector<vector3> innerCircle = GenerateCylinderGeometry(a_fInnerRadius, a_fHeight, a_nSubdivisions, false, false);
+
+	vector3 verticalOffset(0.0f, a_fHeight, 0.0f);
+
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		vector3 botLeft(outerCircle[i].x, outerCircle[i].y, outerCircle[i].z);
+		vector3 botRight(outerCircle[(i + 1) % a_nSubdivisions].x, outerCircle[(i + 1) % a_nSubdivisions].y, outerCircle[(i + 1) % a_nSubdivisions].z);
+		vector3 topLeft(innerCircle[i].x, innerCircle[i].y, innerCircle[i].z);
+		vector3 topRight(innerCircle[(i + 1) % a_nSubdivisions].x, innerCircle[(i + 1) % a_nSubdivisions].y, innerCircle[(i + 1) % a_nSubdivisions].z);
+
+		// draw bottom
+		AddTri(botRight, botLeft, topLeft);
+		AddTri(topLeft, topRight, botRight);
+
+		//draw top
+		AddTri(botLeft + verticalOffset, botRight + verticalOffset, topLeft + verticalOffset);
+		AddTri(topRight + verticalOffset, topLeft + verticalOffset, botRight + verticalOffset);
+	}
 	// -------------------------------
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
 }
-void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSubdivisionsA, int a_nSubdivisionsB, vector3 a_v3Color)
+void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSubdivisionsHeight, int a_nSubdivisionsAxis, vector3 a_v3Color)
 {
 	if (a_fOuterRadius < 0.01f)
 		a_fOuterRadius = 0.01f;
@@ -348,21 +444,47 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	if (a_fInnerRadius > a_fOuterRadius)
 		std::swap(a_fInnerRadius, a_fOuterRadius);
 
-	if (a_nSubdivisionsA < 3)
-		a_nSubdivisionsA = 3;
-	if (a_nSubdivisionsA > 360)
-		a_nSubdivisionsA = 360;
+	if (a_nSubdivisionsHeight < 3)
+		a_nSubdivisionsHeight = 3;
+	if (a_nSubdivisionsHeight > 360)
+		a_nSubdivisionsHeight = 360;
 
-	if (a_nSubdivisionsB < 3)
-		a_nSubdivisionsB = 3;
-	if (a_nSubdivisionsB > 360)
-		a_nSubdivisionsB = 360;
+	if (a_nSubdivisionsAxis < 3)
+		a_nSubdivisionsAxis = 3;
+	if (a_nSubdivisionsAxis > 360)
+		a_nSubdivisionsAxis = 360;
 
 	Release();
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	// followed math available at http://paulbourke.net/geometry/torus/
+	// a torus is a series of connected cylinders, whereas the ring is the base of a tube
+	// think of it as one vertical circle at distance from a horizontal circle with radius r
+	float r1 = (a_fOuterRadius - a_fInnerRadius) / 2.0f;
+	float r0 = a_fInnerRadius + r1;
+
+	std::vector<vector3> vertexData = std::vector<vector3>();
+	const float TWO_PI = 2 * PI;
+	for (int i = 0; i < a_nSubdivisionsAxis; i++)
+	{
+		float thetaCur = (float)i / a_nSubdivisionsAxis * TWO_PI;
+		float thetaNext = (float)(i+1) / a_nSubdivisionsAxis * TWO_PI;
+
+		for (int j = 0; j < a_nSubdivisionsHeight; j++) {
+			float phiCur = (float)j / a_nSubdivisionsHeight * TWO_PI;
+			float phiNext = (float)(j+1) / a_nSubdivisionsHeight * TWO_PI;
+
+			vector3 curLeft(cos(thetaCur) * (r0 + r1 * cos(phiCur)), sin(thetaCur) * (r0 + r1 * cos(phiCur)), r1 * sin(phiCur));
+			vector3 curRight(cos(thetaCur) * (r0 + r1 * cos(phiNext)), sin(thetaCur) * (r0 + r1 * cos(phiNext)), r1 * sin(phiNext));
+			
+			vector3 nextLeft(cos(thetaNext) * (r0 + r1 * cos(phiCur)), sin(thetaNext) * (r0 + r1 * cos(phiCur)), r1 * sin(phiCur));
+			vector3 nextRight(cos(thetaNext) * (r0 + r1 * cos(phiNext)), sin(thetaNext) * (r0 + r1 * cos(phiNext)), r1 * sin(phiNext));
+
+			AddTri(curRight, curLeft, nextRight);
+			AddTri(curLeft, nextLeft, nextRight);
+		}
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -375,19 +497,69 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		a_fRadius = 0.01f;
 
 	//Sets minimum and maximum of subdivisions
-	if (a_nSubdivisions < 1)
+	if (a_nSubdivisions < 3)
 	{
 		GenerateCube(a_fRadius * 2.0f, a_v3Color);
 		return;
 	}
-	if (a_nSubdivisions > 6)
-		a_nSubdivisions = 6;
 
 	Release();
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+
+	int	slices = a_nSubdivisions;
+	int	stacks = a_nSubdivisions;
+	float radius = a_fRadius;
+
+	float delta, phi;
+	const float TWO_PI = 2 * PI;
+	int numVertices = slices * stacks;
+	std::vector<std::vector<vector3>> vertexData(stacks - 1, std::vector<vector3>(slices));
+
+	// compute all the vertices along the surface of the sphere
+	for (int j = 0; j < stacks - 1; j++)
+	{
+		phi = ((float)(j + 1) / stacks) * PI;
+		for (int i = 0; i < slices; i++)
+		{
+			delta = ((float)i / slices) * TWO_PI;
+			float x = radius * cos(delta) * sin(phi);
+			float y = radius * sin(delta) * sin(phi);
+			float z = radius * cos(phi);
+			vertexData[j][i] = vector3( x, y, z );
+		}
+	}
+
+	// contruct the quad strips for each stack of the sphere
+	// except for the first and last stacks
+	for (int j = 0; j < stacks - 2; j++)
+	{
+		for (int i = 0; i < slices; i++)
+		{
+			vector3 botLeft = vertexData[j][i%slices];
+			vector3 topRight = vertexData[j + 1][(i + 1) % slices];
+			vector3 topLeft = vertexData[j + 1][i%slices];
+			vector3 botRight = vertexData[j][(i + 1) % slices];
+
+			AddTri(botLeft, topLeft, topRight);
+			AddTri(botLeft, topRight, botRight);
+		}
+	}
+
+	// connect the top row of quads to the tippy toppiest of the sphere,
+	// then connect the bottom row of quads to the bottiest bottom of the sphere,
+	// by creating a strip of triangles
+	for (int i = 0; i < slices; i++)
+	{
+		vector3 botLeft = vertexData[0][i%slices];
+		vector3 botRight = vertexData[0][(i + 1) % slices];
+		vector3 topRight = vertexData[stacks - 2][(i + 1) % slices];
+		vector3 topLeft = vertexData[stacks - 2][i%slices];
+
+		AddTri(vector3( 0.0, 0.0, -radius ), topRight, topLeft);
+		AddTri(vector3(0.0, 0.0, radius ), botLeft, botRight);
+	}
 	// -------------------------------
 
 	// Adding information about color
