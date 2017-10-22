@@ -2,7 +2,7 @@
 void Application::InitVariables(void)
 {
 	////Change this to your name and email
-	//m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	m_sProgrammer = "D. James Kelly - dxk2294@rit.edu";
 
 	////Alberto needed this at this position for software recording.
 	//m_pWindow->setPosition(sf::Vector2i(710, 0));
@@ -39,6 +39,7 @@ void Application::InitVariables(void)
 	{
 		vector3 v3Color = WaveLengthToRGB(uColor); //calculate color based on wavelength
 		m_shapeList.push_back(m_pMeshMngr->GenerateTorus(fSize, fSize - 0.1f, 3, i, v3Color)); //generate a custom torus and add it to the meshmanager
+		m_orbits.push_back(Orbit(i, fSize));
 		fSize += 0.5f; //increment the size for the next orbit
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
 	}
@@ -59,21 +60,41 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 
+	//Get a timer
+	static float fTimer = 0;	//store the new timer
+	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
+	fTimer += m_pSystem->GetDeltaTime(uClock); //get the delta time for that timer
+	const float SECONDS_PER_INTERVAL = 1.0f; // how long each LERP should take
+	if (fTimer > SECONDS_PER_INTERVAL) {
+		// after every second, increment index of vectors we are lerping between
+		fTimer -= SECONDS_PER_INTERVAL;
+
+		// increment indicies
+		for (uint i = 0; i < m_uOrbits; ++i)
+		{
+			m_orbits[i].incrementIndex();
+		}
+	}
+	float u = fTimer / SECONDS_PER_INTERVAL;
+
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix(); //view Matrix
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix(); //Projection Matrix
 	matrix4 m4Offset = IDENTITY_M4; //offset of the orbits, starts as the global coordinate system
 	/*
 		The following offset will orient the orbits as in the demo, start without it to make your life easier.
 	*/
-	//m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
+	m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
 
-	// draw a shapes
+	// draw shapes
 	for (uint i = 0; i < m_uOrbits; ++i)
 	{
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 90.0f, AXIS_X));
 
-		//calculate the current position
-		vector3 v3CurrentPos = ZERO_V3;
+		//calculate the current position by lerping between current and next "vertices"
+		vector3 v3start = m_orbits[i].curVector();
+		vector3 v3end = m_orbits[i].nextVector();
+		// linearly interpolate
+		vector3 v3CurrentPos = glm::lerp(v3start, v3end, u);
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
 
 		//draw spheres

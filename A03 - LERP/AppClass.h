@@ -8,6 +8,7 @@ Date: 2017/05
 //#include <vld.h>
 
 #include "MyMesh.h"
+#include "Orbit.h"
 
 #include "SFML\Window.hpp"
 #include "SFML\Graphics.hpp"
@@ -20,6 +21,7 @@ class Application
 {
 	uint m_uOrbits = 0; //number of shapes starting at 3 and increasing in sides
 	std::vector<uint> m_shapeList; //shape index for circles
+	std::vector<Orbit> m_orbits; //orbit data necessary for drawing 
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 	
 private:
