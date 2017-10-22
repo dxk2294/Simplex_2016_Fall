@@ -16,9 +16,11 @@ struct Orbit {
 	int curIndex; // the current position we are lerping between
 	int nextIndex; // the next position we are lerping between
 
-	// Precondition: numSides > 2
 	// Constructor
 	Orbit(int numSides, float radius) {
+		if (numSides < 3) {
+			numSides = 3;
+		}
 		m_numSides = numSides;
 		m_radius = radius;
 		curIndex = 0;
