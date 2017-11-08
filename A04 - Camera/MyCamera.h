@@ -13,8 +13,12 @@ namespace Simplex
 class MyCamera
 {
 	vector3 m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
-	vector3 m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
+	vector3 m_v3Forward = vector3(0.0f, 0.0f, 1.0f); //What direction I am looking
+	vector3 m_v3Target = vector3(0.0f, 0.0f, 11.0f); //What I'm looking at
 	vector3 m_v3Up = vector3(0.0f, 1.0f, 0.0f); //What is up
+
+	float m_fPitch = 0.0f;
+	float m_fYaw = 0.0f;
 
 	bool m_bPerspective = true; //perspective view? False is Orthographic
 
@@ -101,6 +105,62 @@ public:
 	OUTPUT: position of the camera
 	*/
 	vector3 GetPosition(void);
+
+	/*
+	USAGE: Gets the right of the camera
+	ARGUMENTS: ---
+	OUTPUT: right of the camera
+	*/
+	vector3 GetRight(void);
+
+	/*
+	USAGE: Sets the pitch of the camera
+	ARGUMENTS: float a_fPitch -> pitch of camera
+	OUTPUT: ---
+	*/
+	void SetPitch(float a_fPitch);
+
+	/*
+	USAGE: Gets the pitch of the camera
+	ARGUMENTS: ---
+	OUTPUT: pitch of the camera
+	*/
+	float GetPitch(void);
+
+	/*
+	USAGE: Sets the yaw of the camera
+	ARGUMENTS: float a_fYaw -> pitch of camera
+	OUTPUT: ---
+	*/
+	void SetYaw(float a_fYaw);
+
+	/*
+	USAGE: Updates the forward of the camera based on pitch and yaw
+	ARGUMENTS: ---
+	OUTPUT: ---
+	*/
+	void UpdateForward(void);
+
+	/*
+	USAGE: Gets the yaw of the camera
+	ARGUMENTS: ---
+	OUTPUT: yaw of the camera
+	*/
+	float GetYaw(void);
+
+	/*
+	USAGE: Sets the forward of the camera
+	ARGUMENTS: vector3 a_v3Forward -> Direction of camera forward
+	OUTPUT: ---
+	*/
+	void SetForward(vector3 a_v3Forward);
+
+	/*
+	USAGE: Gets the forward of the camera
+	ARGUMENTS: ---
+	OUTPUT: forward of the camera
+	*/
+	vector3 GetForward(void);
 
 	/*
 	USAGE: Sets the position of the camera

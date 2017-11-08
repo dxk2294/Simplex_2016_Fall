@@ -3,7 +3,7 @@ using namespace Simplex;
 void Application::InitVariables(void)
 {
 	////Change this to your name and email
-	//m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	m_sProgrammer = "D. James Kelly - dxk2294@rit.edu";
 
 	////Alberto needed this at this position for software recording.
 	//m_pWindow->setPosition(sf::Vector2i(710, 0));
@@ -14,14 +14,16 @@ void Application::InitVariables(void)
 
 	//init the camera
 	m_pCamera = new MyCamera();
-	m_pCamera->SetPositionTargetAndUp(
-			vector3(0.0f, 3.0f, 20.0f), //Where my eyes are
-			vector3(0.0f, 3.0f, 19.0f), //where what I'm looking at is
-			AXIS_Y);					//what is up
+	m_pCamera->SetPosition(
+		vector3(0.0f, 3.0f, 20.0f)
+	);
+	m_pCamera->SetYaw(-90);
 
 	//Get the singleton
 	m_pMyMeshMngr = MyMeshManager::GetInstance();
 	m_pMyMeshMngr->SetCamera(m_pCamera);
+
+	m_clock = m_pSystem->GenClock();
 }
 void Application::Update(void)
 {
@@ -32,7 +34,7 @@ void Application::Update(void)
 	ArcBall();
 
 	//Is the first person camera active?
-	CameraRotation();
+	CameraRotation(0.03f);
 
 	//Add objects to the Manager
 	for (int j = -50; j < 50; j += 2)

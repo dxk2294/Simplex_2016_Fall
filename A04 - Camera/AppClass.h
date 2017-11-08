@@ -33,6 +33,8 @@ private:
 	vector4 m_v4ClearColor; //Color of the scene
 	bool m_bRunning = false; //Is app running?
 
+	uint m_clock = 0;
+
 	sf::Window* m_pWindow = nullptr; //SFML window
 	Simplex::SystemSingleton* m_pSystem = nullptr; //Singleton of the system
 	Simplex::LightManager* m_pLightMngr = nullptr; //Light Manager of the system

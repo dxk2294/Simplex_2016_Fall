@@ -2,7 +2,10 @@
 using namespace Simplex;
 
 //Accessors
-void Simplex::MyCamera::SetPosition(vector3 a_v3Position) { m_v3Position = a_v3Position; }
+void Simplex::MyCamera::SetPosition(vector3 a_v3Position) { 
+	m_v3Position = a_v3Position; 
+	m_v3Target = m_v3Position + m_v3Forward;
+}
 
 void Simplex::MyCamera::SetTarget(vector3 a_v3Target) { m_v3Target = a_v3Target; }
 
@@ -23,6 +26,54 @@ void Simplex::MyCamera::SetVerticalPlanes(vector2 a_v2Vertical) { m_v2Vertical =
 matrix4 Simplex::MyCamera::GetProjectionMatrix(void) { return m_m4Projection; }
 
 matrix4 Simplex::MyCamera::GetViewMatrix(void) { CalculateViewMatrix(); return m_m4View; }
+
+vector3 Simplex::MyCamera::GetPosition(void) { return m_v3Position; }
+
+vector3 Simplex::MyCamera::GetRight(void) { 
+	return 	glm::normalize(glm::cross(m_v3Up, m_v3Forward));
+}
+
+void Simplex::MyCamera::SetPitch(float a_fPitch) 
+{
+	m_fPitch = a_fPitch;
+	if (m_fPitch > 89.95f) {
+		m_fPitch = 89.95f;
+	}
+	if (m_fPitch < -89.95f) {
+		m_fPitch = -89.95f;
+	}
+	UpdateForward();
+}
+
+float Simplex::MyCamera::GetPitch(void) { return m_fPitch; }
+
+void Simplex::MyCamera::SetYaw(float a_fYaw) 
+{ 
+	m_fYaw = a_fYaw; 
+	UpdateForward(); 
+}
+
+float Simplex::MyCamera::GetYaw(void) { return m_fYaw; }
+
+// math adapted from https://math.stackexchange.com/questions/1637464/find-unit-vector-given-roll-pitch-and-yaw
+void Simplex::MyCamera::UpdateForward(void)
+{
+	m_v3Forward = glm::normalize(vector3(
+		cos(glm::radians(m_fPitch)) * cos(glm::radians(m_fYaw)),
+		sin(glm::radians(m_fPitch)),
+		cos(glm::radians(m_fPitch)) * sin(glm::radians(m_fYaw))
+	));
+}
+
+void Simplex::MyCamera::SetForward(vector3 a_v3Forward) 
+{
+	m_v3Forward = glm::normalize(a_v3Forward);
+	m_v3Target = m_v3Position + m_v3Forward;
+}
+
+vector3 Simplex::MyCamera::GetForward(void) {
+	return m_v3Forward;
+}
 
 Simplex::MyCamera::MyCamera()
 {
@@ -127,7 +178,6 @@ void Simplex::MyCamera::ResetCamera(void)
 
 void Simplex::MyCamera::SetPositionTargetAndUp(vector3 a_v3Position, vector3 a_v3Target, vector3 a_v3Upward)
 {
-	m_v3Position = a_v3Position;
 	m_v3Target = a_v3Target;
 	m_v3Up = a_v3Position + a_v3Upward;
 	CalculateProjectionMatrix();
