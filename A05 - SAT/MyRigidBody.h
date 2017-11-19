@@ -85,6 +85,13 @@ public:
 	void ClearCollidingList(void);
 
 	/*
+	USAGE: Gets the local axes of an OBB
+	ARGUMENTS: ---
+	OUTPUT: ---
+	*/
+	std::vector<vector3> GetLocalAxes(void);
+
+	/*
 	USAGE: Mark collision with the incoming Rigid Body
 	ARGUMENTS: MyRigidBody* other -> inspected rigid body
 	OUTPUT: ---

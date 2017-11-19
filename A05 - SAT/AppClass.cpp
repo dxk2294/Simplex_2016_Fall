@@ -71,6 +71,25 @@ void Application::Display(void)
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 	
+	//m_pMeshMngr->AddLineToRenderList(glm::translate(m_pCreeperRB->GetCenterGlobal()),
+	//	m_pCreeperRB->GetCenterLocal(), m_pCreeperRB->GetCenterLocal() + vector3(m_pCreeperRB->GetHalfWidth().x, 0.0f, 0.0f), C_RED, C_RED);
+
+	//m_pMeshMngr->AddLineToRenderList(glm::translate(m_pCreeperRB->GetCenterGlobal()),
+	//	m_pCreeperRB->GetCenterLocal(), m_pCreeperRB->GetCenterLocal() + vector3(0.0f, m_pCreeperRB->GetHalfWidth().y, 0.0f), C_GREEN, C_GREEN);
+
+	//m_pMeshMngr->AddLineToRenderList(glm::translate(m_pCreeperRB->GetCenterGlobal()),
+	//	m_pCreeperRB->GetCenterLocal(), m_pCreeperRB->GetCenterLocal() + vector3(0.0f, 0.0f, m_pCreeperRB->GetHalfWidth().z), C_BLUE, C_BLUE);
+
+	//auto axes = m_pCreeperRB->GetLocalAxes();
+	//m_pMeshMngr->AddLineToRenderList(glm::translate(m_pCreeperRB->GetCenterGlobal()),
+	//	m_pCreeperRB->GetCenterLocal(), m_pCreeperRB->GetCenterLocal() + axes[0], C_RED, C_RED);
+
+	//m_pMeshMngr->AddLineToRenderList(glm::translate(m_pCreeperRB->GetCenterGlobal()),
+	//	m_pCreeperRB->GetCenterLocal(), m_pCreeperRB->GetCenterLocal() + axes[1], C_GREEN, C_GREEN);
+
+	//m_pMeshMngr->AddLineToRenderList(glm::translate(m_pCreeperRB->GetCenterGlobal()),
+	//	m_pCreeperRB->GetCenterLocal(), m_pCreeperRB->GetCenterLocal() + axes[2], C_BLUE, C_BLUE);
+
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();
 

@@ -274,18 +274,167 @@ void MyRigidBody::AddToRenderList(void)
 	}
 }
 
+std::vector<vector3> MyRigidBody::GetLocalAxes()
+{
+	std::vector<vector3> u;
+
+	matrix4 mm = this->GetModelMatrix();
+
+	// remove translation
+	mm[3][0] = 0.0f;
+	mm[3][1] = 0.0f;
+	mm[3][2] = 0.0f;
+	
+	vector4 x4 = mm * vector4(1.0f, 0.0f, 0.0f, 1.0f);
+	vector3 x = glm::normalize(vector3(x4.x, x4.y, x4.z));
+	u.push_back(x);
+
+	vector4 y4 = mm * vector4(0.0f, 1.0f, 0.0f, 1.0f);
+	vector3 y = glm::normalize(vector3(y4.x, y4.y, y4.z));
+	u.push_back(y);
+
+	vector4 z4 = mm * vector4(0.0f, 0.0f, 1.0f, 1.0f);
+	vector3 z = glm::normalize(vector3(z4.x, z4.y,z4.z));
+	u.push_back(z);
+
+	return u;
+}
+
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
 	/*
-	Your code goes here instead of this comment;
-
 	For this method, if there is an axis that separates the two objects
 	then the return will be different than 0; 1 for any separating axis
 	is ok if you are not going for the extra credit, if you could not
 	find a separating axis you need to return 0, there is an enum in
 	Simplex that might help you [eSATResults] feel free to use it.
 	(eSATResults::SAT_NONE has a value of 0)
+
+	Much of this code comes from Real Time Collision Detection, by Christer Ericson
 	*/
+	const float EPSILON = 0.0005f;
+
+	vector3 ca = this->GetCenterGlobal();
+	vector3 cb = a_pOther->GetCenterGlobal();
+
+	vector3 ea = this->GetHalfWidth();
+	vector3 eb = a_pOther->GetHalfWidth();
+
+	float ra;
+	float rb;
+
+	std::vector<vector3> ua = this->GetLocalAxes();
+	std::vector<vector3> ub = a_pOther->GetLocalAxes();
+
+	// compute rotation matrix to convert b to a's coordinate system
+	matrix3 R;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			R[i][j] = glm::dot(ua[i], ub[j]);
+		}
+	}
+
+	// compute common expressions, add in epsilon to account for float errors
+	matrix3 AbsR;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			AbsR[i][j] = abs(R[i][j]) + EPSILON;
+		}
+	}
+
+	// compute translation t
+	vector3 t = cb - ca;
+	// bring t into a's coordinate frame by projecting onto axes
+	t = vector3(glm::dot(t, ua[0]), glm::dot(t, ua[1]), glm::dot(t, ua[2]));
+
+	// test axes A0, A1, A2
+	for (int i = 0; i < 3; i++)
+	{
+		ra = ea[i];
+		rb = eb[0] * AbsR[i][0] + eb[1] * AbsR[i][1] + eb[2] * AbsR[i][2];
+
+		if (abs(t[i]) > ra + rb)
+		{
+			if (i == 0) {
+				return eSATResults::SAT_AX;
+			}
+			if (i == 1) {
+				return eSATResults::SAT_AY;
+			}
+			if (i == 2) {
+				return eSATResults::SAT_AZ;
+			}
+		}
+	}
+
+	// test axes B0, B1, B2
+	for (int i = 0; i < 3; i++)
+	{
+		ra = ea[0] * AbsR[0][i] + ea[1] * AbsR[1][i] + ea[2] * AbsR[2][i];
+		ra = eb[i];
+
+		if (abs(t[0] * R[0][i] + t[1] * R[1][i] + t[2] * R[2][i]) > ra + rb)
+		{
+			if (i == 0) {
+				return eSATResults::SAT_BX;
+			}
+			if (i == 1) {
+				return eSATResults::SAT_BY;
+			}
+			if (i == 2) {
+				return eSATResults::SAT_BZ;
+			}
+		}
+	}
+
+	// test axis A0 x B0
+	ra = ea[1] * AbsR[2][0] + ea[2] * AbsR[1][0];
+	rb = eb[1] * AbsR[0][2] + eb[2] * AbsR[0][1];
+	if (abs(t[2] * R[1][0] - t[1] * R[2][0]) > ra + rb) return eSATResults::SAT_AXxBX;
+
+	// test axis A0 x B1
+	ra = ea[1] * AbsR[2][1] + ea[2] * AbsR[1][1];
+	rb = eb[0] * AbsR[0][2] + eb[2] * AbsR[0][0];
+	if (abs(t[2] * R[1][1] - t[1] * R[2][1]) > ra + rb) return eSATResults::SAT_AXxBY;
+
+	// test axis A0 x B2
+	ra = ea[1] * AbsR[2][2] + ea[2] * AbsR[1][2];
+	rb = eb[0] * AbsR[0][1] + eb[1] * AbsR[0][0];
+	if (abs(t[2] * R[1][2] - t[1] * R[2][2]) > ra + rb) return eSATResults::SAT_AXxBZ;
+
+	// test axis A1 x B0
+	ra = ea[0] * AbsR[2][0] + ea[2] * AbsR[0][0];
+	rb = eb[1] * AbsR[1][2] + eb[2] * AbsR[1][1];
+	if (abs(t[0] * R[2][0] - t[2] * R[0][0]) > ra + rb) return eSATResults::SAT_AYxBX;
+
+	// test axis A1 x B1
+	ra = ea[0] * AbsR[2][1] + ea[2] * AbsR[0][1];
+	rb = eb[0] * AbsR[1][2] + eb[2] * AbsR[1][0];
+	if (abs(t[0] * R[2][1] - t[2] * R[0][1]) > ra + rb) return eSATResults::SAT_AYxBY;
+
+	// test axis A1 x B2
+	ra = ea[0] * AbsR[2][2] + ea[2] * AbsR[0][2];
+	rb = eb[0] * AbsR[1][1] + eb[1] * AbsR[1][0];
+	if (abs(t[0] * R[2][2] - t[2] * R[0][2]) > ra + rb) return eSATResults::SAT_AYxBZ;
+
+	// test axis A2 x B0
+	ra = ea[0] * AbsR[1][0] + ea[1] * AbsR[0][0];
+	rb = eb[1] * AbsR[2][2] + eb[2] * AbsR[2][1];
+	if (abs(t[1] * R[0][0] - t[0] * R[1][0]) > ra + rb) return eSATResults::SAT_AZxBX;
+
+	// test axis A2 x B1
+	ra = ea[0] * AbsR[1][1] + ea[1] * AbsR[0][1];
+	rb = eb[0] * AbsR[2][2] + eb[2] * AbsR[2][0];
+	if (abs(t[1] * R[0][1] - t[0] * R[1][1]) > ra + rb) return eSATResults::SAT_AZxBY;
+
+	// test axis A2 x B2
+	ra = ea[0] * AbsR[1][2] + ea[1] * AbsR[0][2];
+	rb = eb[0] * AbsR[2][1] + eb[1] * AbsR[2][0];
+	if (abs(t[1] * R[0][2] - t[0] * R[1][2]) > ra + rb) return eSATResults::SAT_AZxBZ;
 
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
