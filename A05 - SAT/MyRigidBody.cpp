@@ -232,8 +232,51 @@ bool MyRigidBody::IsColliding(MyRigidBody* const a_pOther)
 	//if they are colliding check the SAT
 	if (bColliding)
 	{
-		if(SAT(a_pOther) != eSATResults::SAT_NONE)
+		int satResult = SAT(a_pOther);
+		
+		// attempts to draw the planes. it was a bad idea.
+		if (satResult != eSATResults::SAT_NONE) {
 			bColliding = false;// reset to false
+
+			vector3 up;
+			vector3 right;
+			vector3 forward;
+
+			std::vector<vector3> ua = this->GetLocalAxes();
+			std::vector<vector3> ub = a_pOther->GetLocalAxes();
+
+			switch (satResult)
+			{
+			case eSATResults::SAT_AX:
+				//up = ua[0];
+				//forward = ua[1];
+				//right = ua[2];
+				break;
+			default:
+				break;
+			}
+
+			if (up != ZERO_V3) {
+				matrix4 model, modelOpp;
+				matrix4 rotation;
+				rotation[0] = vector4(right.x, up.x, forward.x, 0.0f);
+				rotation[1] = vector4(right.y, up.y, forward.y, 0.0f);
+				rotation[2] = vector4(right.z, up.z, forward.z, 0.0f);
+				rotation[3] = vector4(0.0f, 0.0f, 0.0f, 1.0f);
+				model = glm::translate(model, this->GetCenterGlobal());
+				model = model * rotation;
+				rotation[0][2] *= -1;
+				rotation[1][2] *= -1;
+				rotation[2][2] *= -1;
+				modelOpp = model * rotation;
+				model = glm::scale(model, vector3(5.0f, 5.0f, 5.0f));
+				modelOpp = glm::scale(modelOpp, vector3(5.0f, 5.0f, 5.0f));
+
+				m_pMeshMngr->AddPlaneToRenderList(model, C_RED, RENDER_SOLID);
+				m_pMeshMngr->AddPlaneToRenderList(modelOpp, C_RED, RENDER_SOLID);
+				auto p = m_pMeshMngr->GeneratePlane(5.0f, C_RED);
+			}
+		}
 	}
 
 	if (bColliding) //they are colliding
@@ -285,6 +328,7 @@ std::vector<vector3> MyRigidBody::GetLocalAxes()
 	mm[3][1] = 0.0f;
 	mm[3][2] = 0.0f;
 	
+	// rotate unit axes by rotation + scale matrix to get rotated axes
 	vector4 x4 = mm * vector4(1.0f, 0.0f, 0.0f, 1.0f);
 	vector3 x = glm::normalize(vector3(x4.x, x4.y, x4.z));
 	u.push_back(x);
@@ -351,41 +395,37 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	// bring t into a's coordinate frame by projecting onto axes
 	t = vector3(glm::dot(t, ua[0]), glm::dot(t, ua[1]), glm::dot(t, ua[2]));
 
-	// test axes A0, A1, A2
-	for (int i = 0; i < 3; i++)
-	{
+	// Test axes L = A0, L = A1, L = A2
+	for (int i = 0; i < 3; i++) {
 		ra = ea[i];
 		rb = eb[0] * AbsR[i][0] + eb[1] * AbsR[i][1] + eb[2] * AbsR[i][2];
-
 		if (abs(t[i]) > ra + rb)
 		{
 			if (i == 0) {
 				return eSATResults::SAT_AX;
 			}
-			if (i == 1) {
+			else if (i == 1) {
 				return eSATResults::SAT_AY;
 			}
-			if (i == 2) {
+			else {
 				return eSATResults::SAT_AZ;
 			}
 		}
 	}
 
-	// test axes B0, B1, B2
-	for (int i = 0; i < 3; i++)
-	{
+	// Test axes L = B0, L = B1, L = B2
+	for (int i = 0; i < 3; i++) {
 		ra = ea[0] * AbsR[0][i] + ea[1] * AbsR[1][i] + ea[2] * AbsR[2][i];
-		ra = eb[i];
-
+		rb = eb[i];
 		if (abs(t[0] * R[0][i] + t[1] * R[1][i] + t[2] * R[2][i]) > ra + rb)
 		{
 			if (i == 0) {
 				return eSATResults::SAT_BX;
 			}
-			if (i == 1) {
+			else if (i == 1) {
 				return eSATResults::SAT_BY;
 			}
-			if (i == 2) {
+			else {
 				return eSATResults::SAT_BZ;
 			}
 		}
