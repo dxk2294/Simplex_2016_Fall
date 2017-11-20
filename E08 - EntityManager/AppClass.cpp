@@ -71,7 +71,11 @@ void Application::Update(void)
 	m_pEntityMngr->Update();
 
 	//Add objects to render list
-	m_pEntityMngr->AddEntityToRenderList(-1, true);
+	m_pEntityMngr->AddEntityToRenderList("Creeper", true);
+	m_pEntityMngr->AddEntityToRenderList("Steve", true);
+	m_pEntityMngr->AddEntityToRenderList("Cow", true);
+	m_pEntityMngr->AddEntityToRenderList("Zombie", true);
+	m_pEntityMngr->AddEntityToRenderList("Pig", true);
 }
 void Application::Display(void)
 {
