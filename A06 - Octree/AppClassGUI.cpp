@@ -59,6 +59,8 @@ void Application::DrawGUI(void)
 			ImGui::Separator();
 			ImGui::Text("	  T: Toggle Octree display\n");
 			ImGui::Separator();
+			ImGui::Text("	  C: Toggle collision detection\n");
+			ImGui::Separator();
 			ImGui::TextColored(ImColor(255, 255, 0), "Octree\n");
 		}
 		ImGui::End();

@@ -10,7 +10,7 @@ Date: 2017/06
 #include "ControllerConfiguration.h"
 #include "imgui\ImGuiObject.h"
 
-#include "MyEntityManager.h"
+#include "DJKEntityManager.h"
 #include "MyOctant.h"
 
 namespace Simplex
@@ -18,12 +18,12 @@ namespace Simplex
 	//Adding Application to the Simplex namespace
 class Application
 {
-	EntityManager* m_pEntityMngr = nullptr; //Entity Manager
+	DJKEntityManager* m_pEntityMngr = nullptr; //Entity Manager
 	MyOctant* octree = nullptr;
 	uint m_uOctantID = 0; //Index of Octant to display
 	uint m_uObjects = 0; //Number of objects in the scene
 	uint m_uOctantLevels = 0; //Number of levels in the octree
-	bool m_bDisplayOctree = true; //Number of levels in the octree
+	bool m_bDisplayOctree = true; //Whether to display the octree
 private:
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //programmer
 

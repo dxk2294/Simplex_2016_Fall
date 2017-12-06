@@ -31,11 +31,11 @@ void Application::InitVariables(void)
 		}
 	}
 	m_uOctantLevels = 1;
+
+	octree = new MyOctant(m_uOctantLevels, 5);
+
+	m_pEntityMngr->active_octree = octree;
 	m_pEntityMngr->Update();
-
-	octree = new MyOctant(m_uOctantLevels);
-
-	std::cout << "Octree created." << std::endl;
 }
 void Application::Update(void)
 {

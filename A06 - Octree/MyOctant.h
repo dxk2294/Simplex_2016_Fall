@@ -8,8 +8,10 @@ Date: 2017/07
 
 #include "Simplex\Simplex.h"
 
+
 namespace Simplex
 {
+	class DJKEntityManager;
 
 	//System Class
 	class MyOctant
@@ -25,7 +27,7 @@ namespace Simplex
 		float m_fSize = 0.0f; //Size of the octant
 
 		MeshManager* m_pMeshMngr = nullptr;//Mesh Manager singleton
-		EntityManager* m_pEntityMngr = nullptr; //Entity Manager Singleton
+		DJKEntityManager* m_pEntityMngr = nullptr; //Entity Manager Singleton
 
 		vector3 m_v3Center = vector3(0.0f); //Will store the center point of the octant
 		vector3 m_v3Min = vector3(0.0f); //Will store the minimum vector of the octant
@@ -195,6 +197,27 @@ namespace Simplex
 		OUTPUT: ---
 		*/
 		void GenerateModelMatrix(void);
+
+		/*
+		USAGE: Returns leaves with entities
+		ARGUMENTS: ---
+		OUTPUT: leaves with entities
+		*/
+		std::vector<MyOctant*> GetLeavesWithEntities(void);
+
+		/*
+		USAGE: Returns entities
+		ARGUMENTS: ---
+		OUTPUT: entities
+		*/
+		std::vector<uint> GetEntities(void);
+
+		/*
+		USAGE: Returns max depth
+		ARGUMENTS: ---
+		OUTPUT: max depth
+		*/
+		static uint GetMaxDepth(void);
 
 	private:
 		/*

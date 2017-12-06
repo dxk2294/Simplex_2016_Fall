@@ -114,6 +114,9 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 	case sf::Keyboard::T:
 		m_bDisplayOctree = !m_bDisplayOctree;
 		break;
+	case sf::Keyboard::C:
+		m_pEntityMngr->m_bCheckCollisions = !m_pEntityMngr->m_bCheckCollisions;
+		break;
 	case sf::Keyboard::I:
 		++m_uOctantID;
 		
@@ -129,12 +132,13 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		
 		break;
 	case sf::Keyboard::U:
-		if (m_uOctantLevels < 4)
+		if (m_uOctantLevels < 8)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			++m_uOctantLevels;
 			SafeDelete(octree);
 			octree = new MyOctant(m_uOctantLevels, 5);
+			m_pEntityMngr->active_octree = octree;
 		}
 		break;
 	case sf::Keyboard::J:
@@ -144,6 +148,7 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 			--m_uOctantLevels;
 			SafeDelete(octree);
 			octree = new MyOctant(m_uOctantLevels, 5);
+			m_pEntityMngr->active_octree = octree;
 		}
 		break;
 	case sf::Keyboard::LShift:
