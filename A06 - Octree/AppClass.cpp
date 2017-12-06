@@ -2,6 +2,7 @@
 using namespace Simplex;
 void Application::InitVariables(void)
 {
+	m_sProgrammer = "D. James Kelly";
 	//Set the position and target of the camera
 	m_pCameraMngr->SetPositionTargetAndUp(
 		vector3(0.0f, 0.0f, 100.0f), //Position
@@ -31,6 +32,10 @@ void Application::InitVariables(void)
 	}
 	m_uOctantLevels = 1;
 	m_pEntityMngr->Update();
+
+	octree = new MyOctant(m_uOctantLevels);
+
+	std::cout << "Octree created." << std::endl;
 }
 void Application::Update(void)
 {
@@ -59,7 +64,12 @@ void Application::Display(void)
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
-	
+
+	//render octree
+	if (m_bDisplayOctree) {
+		octree->Display(m_uOctantID);
+	}
+
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();
 
@@ -74,6 +84,8 @@ void Application::Display(void)
 }
 void Application::Release(void)
 {
+	SafeDelete(octree);
+
 	//release GUI
 	ShutdownGUI();
 }

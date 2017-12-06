@@ -111,40 +111,39 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		bFPSControl = !bFPSControl;
 		m_pCameraMngr->SetFPS(bFPSControl);
 		break;
-	case sf::Keyboard::PageUp:
+	case sf::Keyboard::T:
+		m_bDisplayOctree = !m_bDisplayOctree;
+		break;
+	case sf::Keyboard::I:
 		++m_uOctantID;
-		/*
-		if (m_uOctantID >= m_pRoot->GetOctantCount())
-			m_uOctantID = - 1;
-		*/
+		
+		if (m_uOctantID >= octree->GetMyOctantCount())
+			m_uOctantID = 0;
+		
 		break;
-	case sf::Keyboard::PageDown:
+	case sf::Keyboard::K:
 		--m_uOctantID;
-		/*
-		if (m_uOctantID >= m_pRoot->GetOctantCount())
-			m_uOctantID = - 1;
-		*/
+		
+		if (m_uOctantID >= octree->GetMyOctantCount())
+			m_uOctantID = octree->GetMyOctantCount() - 1;
+		
 		break;
-	case sf::Keyboard::Add:
+	case sf::Keyboard::U:
 		if (m_uOctantLevels < 4)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			++m_uOctantLevels;
-			/*
-			SafeDelete(m_pRoot);
-			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+			SafeDelete(octree);
+			octree = new MyOctant(m_uOctantLevels, 5);
 		}
 		break;
-	case sf::Keyboard::Subtract:
+	case sf::Keyboard::J:
 		if (m_uOctantLevels > 0)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			--m_uOctantLevels;
-			/*
-			SafeDelete(m_pRoot);
-			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+			SafeDelete(octree);
+			octree = new MyOctant(m_uOctantLevels, 5);
 		}
 		break;
 	case sf::Keyboard::LShift:

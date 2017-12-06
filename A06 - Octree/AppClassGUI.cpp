@@ -49,11 +49,15 @@ void Application::DrawGUI(void)
 			ImGui::Text("	 F3: Orthographic Y\n");
 			ImGui::Text("	 F4: Orthographic Z\n");
 			ImGui::Separator();
-			ImGui::Text(" PageUp: Increment Octant display\n");
-			ImGui::Text(" PageDw: Decrement Octant display\n");
+			ImGui::TextColored(v4Color, " NOTE THE KEY BINDINGS HAVE CHANGED:\n");
+			ImGui::Text("	  I: Increment Octant display\n");
+			ImGui::Text("	  K: Decrement Octant display\n");
 			ImGui::Separator();
-			ImGui::Text("	  -: Increment Octree subdivision\n");
-			ImGui::Text("	  +: Decrement Octree subdivision\n");
+			ImGui::TextColored(v4Color, " NOTE THE KEY BINDINGS HAVE CHANGED:\n");
+			ImGui::Text("	  U: Increment Octree subdivision\n");
+			ImGui::Text("	  J: Decrement Octree subdivision\n");
+			ImGui::Separator();
+			ImGui::Text("	  T: Toggle Octree display\n");
 			ImGui::Separator();
 			ImGui::TextColored(ImColor(255, 255, 0), "Octree\n");
 		}
