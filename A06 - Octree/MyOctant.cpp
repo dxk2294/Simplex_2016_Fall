@@ -76,6 +76,7 @@ using namespace Simplex;
 
 	Simplex::MyOctant::~MyOctant(void)
 	{
+		Release();
 	}
 
 	void Simplex::MyOctant::Swap(MyOctant & other)
@@ -264,6 +265,14 @@ using namespace Simplex;
 
 	void Simplex::MyOctant::Release(void)
 	{
+		if (m_pParent == nullptr) {
+			// we are root
+			for (int i = 1; i < m_lChildAndEmpty.size(); i++) {
+				if (m_lChildAndEmpty[i] != nullptr) {
+					delete m_lChildAndEmpty[i];
+				}
+			}
+		}
 	}
 
 	void Simplex::MyOctant::Init(void)
